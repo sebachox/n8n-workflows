@@ -1,0 +1,447 @@
+{
+  "name": "Reto Autonomo - Mercadologo",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e08385ac-db99-485b-a72b-097afc8bd9e3",
+      "name": "Inicio Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:\\MiReto\\Entrada\\*.pdf",
+        "options": {}
+      },
+      "id": "21286daa-badc-452d-b84d-53eb9a3f1d80",
+      "name": "Leer PDFs",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "15b0c7c7-9f3e-4cb6-9718-6ffaeffe9643",
+      "name": "Extraer Texto del PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:3b",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "id": "15cf4f4f-4698-4332-8180-88c21d635ab0",
+      "name": "Ollama Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        368
+      ],
+      "credentials": {
+        "ollamaApi": {
+          "id": "8e7FvCCkBve531Ct",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "Nombre_Cliente",
+              "description": "Nombre del cliente que aparece en el informe"
+            },
+            {
+              "name": "Correo",
+              "description": "Correo de contacto del cliente"
+            },
+            {
+              "name": "Empresa",
+              "description": "Nombre de la empresa"
+            },
+            {
+              "name": "P1",
+              "type": "number",
+              "description": "Puntuacion de: Revision exhaustiva de planificacion y objetivos (1 a 5)"
+            },
+            {
+              "name": "P2",
+              "type": "number",
+              "description": "Puntuacion de: Uso de herramientas analiticas para medir respuesta del cliente (1 a 5)"
+            },
+            {
+              "name": "P3",
+              "type": "number",
+              "description": "Puntuacion de: Revision post-campana para identificar areas de mejora (1 a 5)"
+            },
+            {
+              "name": "P4",
+              "type": "number",
+              "description": "Puntuacion de: Evaluacion de rentabilidad ROI de cada campana (1 a 5)"
+            },
+            {
+              "name": "P5",
+              "type": "number",
+              "description": "Puntuacion de: Procedimientos para optimizacion continua de campanas (1 a 5)"
+            },
+            {
+              "name": "P6",
+              "type": "number",
+              "description": "Puntuacion de: Cumplimiento de normativas de datos personales (1 a 5)"
+            },
+            {
+              "name": "P7",
+              "type": "number",
+              "description": "Puntuacion de: Sistemas en linea para monitorear ejecucion del proceso (1 a 5)"
+            },
+            {
+              "name": "P8",
+              "type": "number",
+              "description": "Puntuacion de: Politica de proteccion contra intrusos no autorizados (1 a 5)"
+            },
+            {
+              "name": "P9",
+              "type": "number",
+              "description": "Puntuacion de: Estrategia de adaptacion a tendencias emergentes (1 a 5)"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "Eres un analista de datos de marketing. Lee este informe de auditoría y extrae \nÚNICAMENTE los siguientes datos, en el mismo orden en que aparecen en el texto:\n\n- Nombre del cliente\n- Correo de contacto\n- Empresa\n- Las 9 puntuaciones de evaluación (P1 a P9), cada una es un número entero del 1 al 5\n\nNo inventes datos. Si un campo no aparece explícitamente en el texto, usa 0 para \nnúmeros o \"N/A\" para texto. Devuelve los números tal cual aparecen, sin redondear \nni modificar."
+        }
+      },
+      "id": "76474437-eaf8-4701-9e16-30e2697673fd",
+      "name": "Information Extractor",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "Nombre_Cliente",
+              "type": "string",
+              "value": "={{ $json.output.Nombre_Cliente }}"
+            },
+            {
+              "id": "a2",
+              "name": "Correo",
+              "type": "string",
+              "value": "={{ $json.output.Correo }}"
+            },
+            {
+              "id": "a3",
+              "name": "Empresa",
+              "type": "string",
+              "value": "={{ $json.output.Empresa }}"
+            },
+            {
+              "id": "22477e36-7f39-40c7-bc10-8c03bcaa420b",
+              "name": "P1",
+              "value": "={{ $json.output.P1 }}",
+              "type": "string"
+            },
+            {
+              "id": "e86d165c-671b-4ab7-ae0c-65ce9daaf992",
+              "name": "P2",
+              "value": "={{ $json.output.P2 }}",
+              "type": "string"
+            },
+            {
+              "id": "8090616d-6fc7-4d0e-9efd-6881db1dabb9",
+              "name": "P3",
+              "value": "={{ $json.output.P3 }}",
+              "type": "string"
+            },
+            {
+              "id": "80dba044-7b30-4929-b97b-9ea7e8d0fc35",
+              "name": "P4",
+              "value": "={{ $json.output.P4 }}",
+              "type": "string"
+            },
+            {
+              "id": "e73591d6-ccc8-479a-8c62-bf057315a97d",
+              "name": "P5",
+              "value": "={{ $json.output.P5 }}",
+              "type": "string"
+            },
+            {
+              "id": "ec8f1a56-940a-4dcd-b138-1f27afa38e2c",
+              "name": "P6",
+              "value": "={{ $json.output.P6 }}",
+              "type": "string"
+            },
+            {
+              "id": "581120c6-a6d0-44dc-887b-6ec35d4635f2",
+              "name": "P7",
+              "value": "={{ $json.output.P7 }}",
+              "type": "string"
+            },
+            {
+              "id": "b29df1b1-5d43-4cbe-a6c1-ec191f41e530",
+              "name": "P8",
+              "value": "={{ $json.output.P8 }}",
+              "type": "string"
+            },
+            {
+              "id": "25aa7250-29d4-4de7-92a5-6201bab23f50",
+              "name": "P9",
+              "value": "={{ $json.output.P9 }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "Puntuacion_Total",
+              "type": "number",
+              "value": "={{ $json.output.P1 + $json.output.P2 + $json.output.P3 + $json.output.P4 + $json.output.P5 + $json.output.P6 + $json.output.P7 + $json.output.P8 + $json.output.P9 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6632af85-9e75-46ff-a152-685eb290bf6c",
+      "name": "Calcular Puntuacion Total",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -432,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "id": "827e75af-201a-4828-9ea4-ff195bb84aca",
+      "name": "Convertir a Excel",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "C:\\MiReto\\Reportes.xlsx",
+        "options": {}
+      },
+      "id": "d4382eb5-3962-43b9-bb8d-c1b89ae4c4a0",
+      "name": "Guardar Reporte",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        448,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Eres un consultor experto en marketing digital. Analiza los siguientes datos de \nauditoría de un cliente y escribe un reporte breve (máximo 4 líneas) en español.\n\nCliente: {{ $json.Nombre_Cliente }}\nEmpresa: {{ $json.Empresa }}\nPuntuación total: {{ $json.Puntuacion_Total }} sobre 45\n\nDetalle de puntajes (escala 1 a 5):\n- Planificación y objetivos: {{ $json.P1 }}\n- Herramientas analíticas: {{ $json.P2 }}\n- Revisión post-campaña: {{ $json.P3 }}\n- Retorno sobre inversión (ROI): {{ $json.P4 }}\n- Optimización continua: {{ $json.P5 }}\n- Cumplimiento normativo de datos: {{ $json.P6 }}\n- Monitoreo del proceso: {{ $json.P7 }}\n- Seguridad contra intrusos: {{ $json.P8 }}\n- Adaptación a tendencias: {{ $json.P9 }}\n\nClasifica el resultado según el total: ≤20 Crítico, ≤30 Alto riesgo, ≤40 Moderado, \n>40 Óptimo. Empieza tu respuesta indicando el nivel con su emoji correspondiente \n(🔴🟠🟡🟢), y luego da 2-3 recomendaciones concretas basadas en los puntajes más bajos.",
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -256,
+        112
+      ],
+      "id": "773d34c9-ada4-4a1b-bff9-7520f99272c0",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e7491768-e5d5-48c0-bf5e-4eccdd1375da",
+              "name": "Nombre_Cliente",
+              "value": "={{ $('Calcular Puntuacion Total').item.json.Nombre_Cliente }}",
+              "type": "string"
+            },
+            {
+              "id": "7eabac8e-68df-48f6-a3eb-af4d027657bc",
+              "name": "Correo",
+              "value": "=\t{{ $('Calcular Puntuacion Total').item.json.Correo }}",
+              "type": "string"
+            },
+            {
+              "id": "7de36460-827b-4467-bca9-74368427413e",
+              "name": "Empresa",
+              "value": "={{ $('Calcular Puntuacion Total').item.json.Empresa }}",
+              "type": "string"
+            },
+            {
+              "id": "f2d677f3-c550-4373-bb34-c9a48b16761d",
+              "name": "Puntuacion_Total",
+              "value": "={{ $('Calcular Puntuacion Total').item.json.Puntuacion_Total }}",
+              "type": "string"
+            },
+            {
+              "id": "9c58ebc1-6142-4c63-8b8d-34de5cc53318",
+              "name": "Analisis",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        112
+      ],
+      "id": "1227569d-61ff-47f0-9a1c-a3b79ae68386",
+      "name": "Edit Fields"
+    }
+  ],
+  "connections": {
+    "Inicio Manual": {
+      "main": [
+        [
+          {
+            "node": "Leer PDFs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer PDFs": {
+      "main": [
+        [
+          {
+            "node": "Extraer Texto del PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Texto del PDF": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Calcular Puntuacion Total",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Puntuacion Total": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convertir a Excel": {
+      "main": [
+        [
+          {
+            "node": "Guardar Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Convertir a Excel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

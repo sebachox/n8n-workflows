@@ -1,0 +1,180 @@
+{
+  "name": "PROYECTO_FINAL",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9046553d-445c-4384-9527-ed858acb0e12",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "a53cd05f-64a5-44d3-974b-4fe701e5bfff",
+      "name": "Extraer Texto del PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=C:\\MiReto\\proyecto_final\\resultados\\Datos_Factura_Extraido{{ $now.format('yyyy-MM-dd') }}.csv",
+        "options": {}
+      },
+      "id": "1ac469f4-27a7-4640-ae44-28b8bcb89148",
+      "name": "Guardar Reporte",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        576,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "=C:\\MiReto\\proyecto_final\\facturas\\*.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "287ee97c-0d8f-49c8-992f-b7f413d72519",
+      "name": "Leer PDFs"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        224
+      ],
+      "id": "df76f5a9-a992-49db-94aa-98ce5cccb583",
+      "name": "Convertir a csv"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const raw = item.json.response;\n  let data;\n  try {\n    data = JSON.parse(raw);\n  } catch (e) {\n    const clean = raw.replace(/```json|```/g, '').trim();\n    data = JSON.parse(clean);\n  }\n\n  // Normaliza las llaves a minúscula por si el modelo cambia el casing\n  const normalized = {};\n  for (const key in data) {\n    normalized[key.toLowerCase()] = data[key];\n  }\n\n  results.push({\n    json: {\n      proveedor: normalized.proveedor ?? null,\n      nit: normalized.nit ?? null,\n      fecha: normalized.fecha ?? null,\n      total: normalized.total ?? null\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        224
+      ],
+      "id": "be5c2678-971b-4d9f-adc0-d63c7e90fa78",
+      "name": "Normalizar JSON",
+      "alwaysOutputData": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"llama3.2:3b\",\n  format: \"json\",\n  stream: false,\n  prompt: \"Eres un sistema de extraccion de datos contables. Tu unica salida debe ser un objeto JSON valido, sin texto adicional, sin explicaciones. Extrae estos 4 campos de la factura: proveedor (string), nit (string), fecha (string formato YYYY-MM-DD), total (numero sin simbolos ni comas). Si un dato no aparece usa null. Responde solo con el JSON. Texto de la factura: \" + $json.text\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "d485dff9-a9c9-46b0-b261-f320237bc32d",
+      "name": "Consultar IA Ollama"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Leer PDFs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Texto del PDF": {
+      "main": [
+        [
+          {
+            "node": "Consultar IA Ollama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer PDFs": {
+      "main": [
+        [
+          {
+            "node": "Extraer Texto del PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convertir a csv": {
+      "main": [
+        [
+          {
+            "node": "Guardar Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar JSON": {
+      "main": [
+        [
+          {
+            "node": "Convertir a csv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar IA Ollama": {
+      "main": [
+        [
+          {
+            "node": "Normalizar JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "pinData": {},
+  "meta": {},
+  "tags": []
+}

@@ -1,0 +1,93 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "36f78c14-788a-49c4-85d7-9c23efefd5d7",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "simple": false,
+        "filters": {
+          "q": "subject:\"Práctica 3\" has:attachment"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        0
+      ],
+      "id": "b36be821-0b0f-46b2-8be9-b90eeba647a1",
+      "name": "Get many messages",
+      "webhookId": "8730f83b-16e6-4eac-8f89-3b3e00f89cf2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gZXanWjXMfgZ64s7",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=C:/taller_n8n/{{ $now.format('yyyy-MM-dd') }}_Sebastian_{{ $binary.attachment_0.fileName }}",
+        "dataPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        0
+      ],
+      "id": "d581478b-2f3d-401a-a5e5-948f5db91308",
+      "name": "Read/Write Files from Disk"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
